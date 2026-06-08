@@ -1,24 +1,10 @@
-# README
+# 概要
+ポートフォリオサイトの、画像api練習用です
 
-This README would normally document whatever steps are necessary to get the
-application up and running.
+- rails
+- ruby
+- postgresql
+- active storage
 
-Things you may want to cover:
-
-* Ruby version
-
-* System dependencies
-
-* Configuration
-
-* Database creation
-
-* Database initialization
-
-* How to run the test suite
-
-* Services (job queues, cache servers, search engines, etc.)
-
-* Deployment instructions
-
-* ...
+# 操作とか
+Ubuntu起動→ cd image-app → code .　でvscode開く
