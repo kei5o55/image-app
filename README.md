@@ -11,3 +11,5 @@ dockerを用いずにwindowsでUbuntu上での操作をしています。将来�
 
 # 操作とか
 Ubuntu起動→ cd image-app → code .　でvscode開く
+なんか変になった時
+docker compose restart backend
