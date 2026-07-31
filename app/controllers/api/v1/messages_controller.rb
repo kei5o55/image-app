@@ -13,7 +13,6 @@ module Api
 
       # POST /api/v1/channels/:channel_id/messages
       def create
-        # テスト用のユーザー取得（認証機能実装後は current_user などに変更）
         user = User.first || User.create!(name: "Test User", email: "test@example.com")
 
         message = @channel.messages.build(
@@ -23,13 +22,18 @@ module Api
           user: user
         )
 
-        # FormData で送られてきた画像ファイル（params[:image]）をアタッチ
         if message_params[:image].present?
           message.image.attach(message_params[:image])
         end
 
         if message.save
-          render json: format_message(message), status: :created
+          formatted_data = format_message(message)
+
+          # ⚡️ 接続中の全クライアントへ即時ブロードキャスト
+          MessagesChannel.broadcast_to(@channel, formatted_data)
+
+          # 送信元へのレスポンス
+          render json: formatted_data, status: :created
         else
           render json: { errors: message.errors.full_messages }, status: :unprocessable_entity
         end
