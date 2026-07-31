@@ -5,19 +5,28 @@ module Api
 
       # GET /api/v1/channels/:channel_id/messages
       def index
-        messages = @channel.messages.order(created_at: :asc)
+        # Active Storage の N+1 問題を防ぐため with_attached_image を使用
+        messages = @channel.messages.with_attached_image.order(created_at: :asc)
 
-        # MessageItem 型にフォーマットして出力
         render json: messages.map { |msg| format_message(msg) }, status: :ok
       end
 
       # POST /api/v1/channels/:channel_id/messages
       def create
-        # テスト用の暫定ユーザー（認証機能実装後は current_user 等に変更）
+        # テスト用のユーザー取得（認証機能実装後は current_user などに変更）
         user = User.first || User.create!(name: "Test User", email: "test@example.com")
 
-        message = @channel.messages.build(message_params)
-        message.user = user
+        message = @channel.messages.build(
+          content: message_params[:content],
+          message_type: message_params[:type] || "text",
+          tags: message_params[:tags] || [],
+          user: user
+        )
+
+        # FormData で送られてきた画像ファイル（params[:image]）をアタッチ
+        if message_params[:image].present?
+          message.image.attach(message_params[:image])
+        end
 
         if message.save
           render json: format_message(message), status: :created
@@ -34,30 +43,25 @@ module Api
         render json: { error: "Channel not found" }, status: :not_found
       end
 
+      # Strong Parameters の設定
       def message_params
-        # フロントから受け取ったパラメータを Rails のカラム名にマッピング
-        p = params.require(:message).permit(:content, :type, :url, :isEdited, tags: [])
-        
-        {
-          content: p[:content],
-          message_type: p[:type] || "text",
-          url: p[:url],
-          is_edited: p[:isEdited] || false,
-          tags: p[:tags] || []
-        }
+        # FormData の場合、JSONのネスト（params.require(:message)）ではなく
+        # トップレベルに値が入るため params.permit で受け取ります
+        params.permit(:content, :type, :image, tags: [])
       end
 
-      # TypeScript の MessageItem インターフェースに完全に合致するハッシュを返す関数
+      # TypeScript の MessageItem 型に合致する形式にレスポンスを整える
       def format_message(msg)
         {
           id: msg.id,
           channelId: msg.channel_id,
-          type: msg.message_type,
+          type: msg.image.attached? ? "image" : msg.message_type,
           content: msg.content,
-          url: msg.url,
-          time: msg.created_at.strftime("%H:%M"), # 例: "18:30" (必要に応じて ISO8601等に変更可能)
+          # Active Storage に画像が添付されていればその完全な URL を生成
+          url: msg.image.attached? ? url_for(msg.image) : nil,
+          time: msg.created_at.strftime("%H:%M"),
           tags: msg.tags || [],
-          isEdited: msg.is_edited
+          isEdited: msg.is_edited || false
         }
       end
     end
