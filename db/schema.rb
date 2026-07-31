@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_07_01_042046) do
+ActiveRecord::Schema[8.1].define(version: 2026_07_31_011359) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -69,7 +69,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_01_042046) do
     t.bigint "channel_id", null: false
     t.text "content"
     t.datetime "created_at", null: false
+    t.boolean "is_edited", default: false, null: false
+    t.string "message_type", default: "text", null: false
+    t.jsonb "tags", default: [], null: false
     t.datetime "updated_at", null: false
+    t.string "url"
     t.bigint "user_id", null: false
     t.index ["channel_id"], name: "index_messages_on_channel_id"
     t.index ["user_id"], name: "index_messages_on_user_id"
