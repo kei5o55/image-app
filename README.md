@@ -14,6 +14,14 @@ Ubuntu起動→ cd image-app → code .　でvscode開く
 なんか変になった時
 docker compose restart backend
 
+### Fat Controllerの回避と責務の分離
+- コントローラーが肥大化しないよう、単一責任の原則を意識して処理を切り出しました。
+   - Model: データ構造の変換や判定ロジックなど、データ自身の知識を集約
+
+   - Service Object: 複数モデルの操作・外部連携（WebSocket配信等）を伴う業務ロジックを集約
+
+   - Controller: リクエストの受け取りとレスポンス返却（交通整理）に専念
+
 
 ## 🛠 使用技術 (Tech Stack)
 
