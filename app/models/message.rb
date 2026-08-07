@@ -2,21 +2,35 @@ class Message < ApplicationRecord
   belongs_to :channel
   belongs_to :user, optional: true
 
-  # Active Storage の画像アタッチメント定義
   has_one_attached :image
 
-  # message_type は "text" か "image" のみ許可
   validates :message_type, inclusion: { in: %w[text image] }
 
-  # tags が nil の場合は空配列を入れる
   before_validation :set_default_tags
 
-  # 画像の完全な URL を返すヘルパーメソッド
+  # フロントエンド（TypeScript）向けのJSON構造に変換するメソッド
+  def to_formatted_json
+    {
+      id: id,
+      channelId: channel_id,
+      type: display_type,
+      content: content,
+      url: image_url,
+      time: created_at.strftime("%H:%M"),
+      tags: tags || [],
+      isEdited: is_edited || false
+    }
+  end
+
+  # 表示用タイプの判定ロジック
+  def display_type
+    image.attached? ? "image" : message_type
+  end
+
+  # 画像URLの生成ロジック
   def image_url
     return nil unless image.attached?
 
-    # include Rails.application.routes.url_helpers を追加するか、
-    # コントローラー側等で host のコンテキストを持って呼ぶのが安全です
     Rails.application.routes.url_helpers.url_for(image)
   end
 
