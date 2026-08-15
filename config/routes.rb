@@ -1,4 +1,5 @@
 Rails.application.routes.draw do
+  get "image/index"
   namespace :api do
     namespace :v1 do
       # 疎通確認用

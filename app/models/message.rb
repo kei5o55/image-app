@@ -39,4 +39,10 @@ class Message < ApplicationRecord
   def set_default_tags
     self.tags ||= []
   end
+
+  def has_image? #画像を持っているか調べる
+    attachments.any? { |attachment| attachment.image? }
+  end
+
+  
 end
