@@ -7,7 +7,15 @@ module Api
           quantity: params[:quantity]
         )
 
-        render json: result
+        images = messages.map do |message|
+          {
+            url: url_for(message.image)
+          }
+        end
+
+        render json: {
+          images: images
+        }
       end
     end
   end
