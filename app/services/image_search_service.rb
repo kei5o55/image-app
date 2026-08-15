@@ -1,14 +1,19 @@
 class ImageSearchService
-  def self.call(tags:, quantity:)
-    new(tags, quantity).call
-  end
-
-  def initialize(tags, quantity)
-    @tags = tags
-    @quantity = quantity
+  def initialize(tag, quantity)
+    @tag = tag
+    @quantity = quantity.to_i
   end
 
   def call
-    # 画像検索処理
+    messages = Message.where(
+      "tags @> ?",
+      [@tag].to_json
+    )
+
+    messages = messages.select do |message|
+      message.image.attached?
+    end
+
+    messages.sample(@quantity)
   end
 end
