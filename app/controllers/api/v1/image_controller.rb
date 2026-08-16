@@ -1,6 +1,7 @@
 module Api
   module V1
     class ImageController < ApplicationController
+      # GET /api/v1/image/search
       def search
         result = ImageSearchService.call(
           tags: params[:tags],

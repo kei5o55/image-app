@@ -1,2 +1,14 @@
-class TagsController < ApplicationController
+module Api
+  module V1
+    class HealthController < ApplicationController
+        #GET api/v1/tags
+      def index
+        render json: {
+          status: "ok",
+          message: "Rails API is connected successfully!",
+          timestamp: Time.current
+        }, status: :ok
+      end
+    end
+  end
 end
