@@ -1,12 +1,11 @@
 module Api
   module V1
-    class HealthController < ApplicationController
-        #GET api/v1/tags
+    class TagsController < ApplicationController
       def index
+        tags = Tag.order(:name)
+
         render json: {
-          status: "ok",
-          message: "Rails API is connected successfully!",
-          timestamp: Time.current
+          tags: tags
         }, status: :ok
       end
     end

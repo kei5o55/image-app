@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_16_150315) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_22_170853) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -48,6 +48,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_16_150315) do
     t.datetime "updated_at", null: false
   end
 
+  create_table "message_tags", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.bigint "message_id", null: false
+    t.bigint "tag_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["message_id", "tag_id"], name: "index_message_tags_on_message_id_and_tag_id", unique: true
+    t.index ["message_id"], name: "index_message_tags_on_message_id"
+    t.index ["tag_id"], name: "index_message_tags_on_tag_id"
+  end
+
   create_table "messages", force: :cascade do |t|
     t.bigint "channel_id", null: false
     t.text "content"
@@ -62,6 +72,13 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_16_150315) do
     t.index ["user_id"], name: "index_messages_on_user_id"
   end
 
+  create_table "tags", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "name", null: false
+    t.datetime "updated_at", null: false
+    t.index ["name"], name: "index_tags_on_name", unique: true
+  end
+
   create_table "users", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "email"
@@ -71,6 +88,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_16_150315) do
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "message_tags", "messages"
+  add_foreign_key "message_tags", "tags"
   add_foreign_key "messages", "channels"
   add_foreign_key "messages", "users"
 end
