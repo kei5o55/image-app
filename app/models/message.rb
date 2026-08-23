@@ -1,7 +1,7 @@
 class Message < ApplicationRecord
   belongs_to :channel
   belongs_to :user, optional: true
-  
+
   has_many :message_tags, dependent: :destroy
   has_many :tags, through: :message_tags
 
@@ -16,12 +16,12 @@ class Message < ApplicationRecord
     {
       id: id,
       channelId: channel_id,
-      type: display_type,
+      type: message_type,
       content: content,
-      url: image_url,
-      time: created_at.strftime("%H:%M"),
-      tags: tags || [],
-      isEdited: is_edited || false
+      url: url,
+      time: created_at,
+      tags: tags.pluck(:name),
+      isEdited: is_edited
     }
   end
 
