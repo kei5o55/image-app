@@ -1,6 +1,9 @@
 class Message < ApplicationRecord
   belongs_to :channel
   belongs_to :user, optional: true
+  
+  has_many :message_tags, dependent: :destroy
+  has_many :tags, through: :message_tags
 
   has_one_attached :image
 

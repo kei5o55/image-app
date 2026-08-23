@@ -9,7 +9,7 @@ Rails.application.routes.draw do
       # 存在するtagを取得
       get "tags", to: "tags#index"
       # チャンネル一覧
-      resources :channels, only: [:index] do
+      resources :channels, only: [:index, :create] do
         # チャンネルに紐づくメッセージ一覧 & 作成
         resources :messages, only: [:index, :create]
       end

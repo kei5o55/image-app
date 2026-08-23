@@ -1,6 +1,11 @@
 class MessageCreationService
-  # 結果を返すためのシンプルな構造体を定義
-  Result = Struct.new(:success, :message, :formatted_data, :errors, keyword_init: true) do
+  Result = Struct.new(
+    :success,
+    :message,
+    :formatted_data,
+    :errors,
+    keyword_init: true
+  ) do
     def success?
       success
     end
@@ -16,28 +21,55 @@ class MessageCreationService
   end
 
   def call
-    # 1. 送信者ユーザーの準備
-    user = User.first || User.create!(name: "Test User", email: "test@example.com")
-
-    # 2. メッセージの組み立て
-    message = @channel.messages.build(
-      content: @params[:content],
-      message_type: @params[:type] || "text",
-      tags: @params[:tags] || [],
-      user: user
+    user = User.first || User.create!(
+      name: "Test User",
+      email: "test@example.com"
     )
 
-    # 3. 画像のアタッチ
-    message.image.attach(@params[:image]) if @params[:image].present?
+    message = nil
 
-    # 4. 保存とブロードキャスト
-    if message.save
-      formatted_data = message.to_formatted_json
-      MessagesChannel.broadcast_to(@channel, formatted_data)
+    ActiveRecord::Base.transaction do
+      # 1. メッセージ作成
+      message = @channel.messages.create!(
+        content: @params[:content],
+        message_type: @params[:type] || "text",
+        user: user
+      )
 
-      Result.new(success: true, message: message, formatted_data: formatted_data)
-    else
-      Result.new(success: false, errors: message.errors.full_messages)
+      # 2. タグを関連付け
+      tag_names = @params[:tags] || []
+
+      tag_names.each do |tag_name|
+        next if tag_name.blank?
+
+        tag = Tag.find_or_create_by!(name: tag_name)
+        message.tags << tag
+      end
+
+      # 3. 画像をアタッチ
+      if @params[:image].present?
+        message.image.attach(@params[:image])
+      end
     end
+
+    # 4. DB保存成功後にブロードキャスト
+    formatted_data = message.to_formatted_json
+
+    MessagesChannel.broadcast_to(
+      @channel,
+      formatted_data
+    )
+
+    Result.new(
+      success: true,
+      message: message,
+      formatted_data: formatted_data
+    )
+
+  rescue ActiveRecord::RecordInvalid => e
+    Result.new(
+      success: false,
+      errors: e.record.errors.full_messages
+    )
   end
 end
