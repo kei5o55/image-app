@@ -11,13 +11,18 @@ class MessageCreationService
     end
   end
 
-  def self.call(channel:, params:)
-    new(channel:, params:).call
+  def self.call(channel:, params:, image_url_generator:)
+    new(
+      channel: channel,
+      params: params,
+      image_url_generator: image_url_generator
+    ).call
   end
 
-  def initialize(channel:, params:)
+  def initialize(channel:, params:, image_url_generator:)
     @channel = channel
     @params = params
+    @image_url_generator = image_url_generator
   end
 
   def call
@@ -53,12 +58,11 @@ class MessageCreationService
     end
 
     # 4. DB保存成功後にブロードキャスト
-    formatted_data = message.to_formatted_json
-
-    MessagesChannel.broadcast_to(
-      @channel,
-      formatted_data
+    formatted_data = message.to_formatted_json.merge(
+      url: message.image.attached? ? @image_url_generator.call(message.image) : nil
     )
+
+    MessagesChannel.broadcast_to(@channel, formatted_data)
 
     Result.new(
       success: true,

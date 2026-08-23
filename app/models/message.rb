@@ -18,8 +18,8 @@ class Message < ApplicationRecord
       channelId: channel_id,
       type: message_type,
       content: content,
-      url: url,
-      time: created_at,
+      url: image.attached? ? Rails.application.routes.url_helpers.rails_blob_path(image) : nil,
+      time: created_at.iso8601,
       tags: tags.pluck(:name),
       isEdited: is_edited
     }
